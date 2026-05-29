@@ -2,14 +2,21 @@ export type UserInfo = {
   login: string;
   mail?: string;
   role?: string;
-  is_admin?: boolean;
+  role_id?: number; //eslint-disable-line
+  mymaps_role?: string; //eslint-disable-line
+  is_admin?: boolean; //eslint-disable-line
+  sn: string;
+  typeUtisilisateur?: string;
 };
 
-export async function getUserInfo(baseUrl: string): Promise<UserInfo> {
+export async function getUserInfo(
+  baseUrl: string,
+  credentials?: RequestCredentials,
+): Promise<UserInfo> {
   const res = await fetch(`${baseUrl}/getuserinfo`, {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    credentials: credentials ?? 'same-origin',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, //eslint-disable-line
     body: new URLSearchParams({}),
   });
   if (!res.ok) throw new Error('not authenticated');
@@ -22,11 +29,12 @@ export async function login(
   baseUrl: string,
   username: string,
   password: string,
+  credentials?: RequestCredentials,
 ): Promise<UserInfo> {
   const res = await fetch(`${baseUrl}/login`, {
     method: 'POST',
-    credentials: 'include',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    credentials: credentials ?? 'same-origin',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, //eslint-disable-line
     body: new URLSearchParams({ login: username, password }),
   });
   if (!res.ok) throw new Error('login failed');
@@ -35,7 +43,12 @@ export async function login(
   return data as UserInfo;
 }
 
-export async function logout(baseUrl: string): Promise<void> {
-  const res = await fetch(`${baseUrl}/logout`, { credentials: 'include' });
+export async function logout(
+  baseUrl: string,
+  credentials?: RequestCredentials,
+): Promise<void> {
+  const res = await fetch(`${baseUrl}/logout`, {
+    credentials: credentials ?? 'same-origin',
+  });
   if (!res.ok) throw new Error('logout failed');
 }

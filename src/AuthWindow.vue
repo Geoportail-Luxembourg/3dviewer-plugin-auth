@@ -1,6 +1,6 @@
 <template>
   <v-sheet>
-    <v-form ref="formRef" @submit.prevent="handleSubmit">
+    <v-form ref="formRef" @submit.prevent="handleConnect">
       <v-container class="py-2 px-3">
         <v-row no-gutters class="mb-2 align-center">
           <v-col cols="4">
@@ -14,7 +14,7 @@
               :model-value="isConnected ? user!.login : username"
               :disabled="isConnected || loading"
               autocomplete="username"
-              :rules="isConnected ? [] : [(v: string) => !!v || '']"
+              :rules="isConnected ? [] : requiredRule"
               @update:model-value="(v: string) => (username = v)"
             />
           </v-col>
@@ -34,7 +34,7 @@
               :type="isConnected ? 'text' : 'password'"
               :disabled="isConnected || loading"
               :autocomplete="isConnected ? 'email' : 'current-password'"
-              :rules="isConnected ? [] : [(v: string) => !!v || '']"
+              :rules="isConnected ? [] : requiredRule"
               @update:model-value="(v: string) => (password = v)"
             />
           </v-col>
@@ -65,8 +65,13 @@
 </template>
 
 <script lang="ts">
-  import { inject, ref, computed } from 'vue';
-  import { VcsTextField, VcsFormButton, VcsLabel, NotificationType } from '@vcmap/ui';
+  import { inject, ref, computed, type Ref, type ComputedRef } from 'vue';
+  import {
+    VcsTextField,
+    VcsFormButton,
+    VcsLabel,
+    NotificationType,
+  } from '@vcmap/ui';
   import type { VcsUiApp } from '@vcmap/ui';
   import { VSheet, VContainer, VRow, VCol, VForm } from 'vuetify/components';
   import { name } from '../package.json';
@@ -80,8 +85,27 @@
 
   export default {
     name: 'AuthWindow',
-    components: { VcsTextField, VcsFormButton, VcsLabel, VSheet, VContainer, VRow, VCol, VForm },
-    setup() {
+    components: {
+      VcsTextField,
+      VcsFormButton,
+      VcsLabel,
+      VSheet,
+      VContainer,
+      VRow,
+      VCol,
+      VForm,
+    },
+    setup(): {
+      user: ComputedRef<UserInfo | null>;
+      isConnected: ComputedRef<boolean>;
+      username: Ref<string>;
+      password: Ref<string>;
+      loading: Ref<boolean>;
+      formRef: Ref;
+      requiredRule: ((v: string) => string | boolean)[];
+      handleConnect: () => Promise<void>;
+      handleDisconnect: () => Promise<void>;
+    } {
       const app = inject<VcsUiApp>('vcsApp')!;
       const plugin = app.plugins.getByKey(name) as unknown as AuthPluginRef;
       const username = ref('');
@@ -92,7 +116,11 @@
       const user = computed(() => plugin.userState.user);
       const isConnected = computed(() => !!user.value);
 
-      async function handleSubmit() {
+      const requiredRule = [
+        (v: string) => !!v || 'lux3dviewerPluginAuth.required',
+      ];
+
+      async function handleConnect(): Promise<void> {
         const { valid } = await formRef.value.validate();
         if (!valid) return;
         loading.value = true;
@@ -109,7 +137,7 @@
         }
       }
 
-      async function handleDisconnect() {
+      async function handleDisconnect(): Promise<void> {
         loading.value = true;
         try {
           await plugin.doLogout();
@@ -123,7 +151,17 @@
         }
       }
 
-      return { user, isConnected, username, password, loading, formRef, handleSubmit, handleDisconnect };
+      return {
+        user,
+        isConnected,
+        username,
+        password,
+        loading,
+        formRef,
+        requiredRule,
+        handleConnect,
+        handleDisconnect,
+      };
     },
   };
 </script>
