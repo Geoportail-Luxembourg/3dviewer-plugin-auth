@@ -1,5 +1,5 @@
 {
-  "name": "@geoportallux/lux-3dviewer-auth",
+  "name": "@geoportallux/lux-3dviewer-plugin-auth",
   "version": "0.0.1",
   "description": "",
   "type": "module",
