@@ -47,11 +47,11 @@ export default function plugin(
     if (!_action) return;
     if (userState.user) {
       _action.name = userState.user.login;
-      _action.title = 'lux3dviewerAuth.logoutTooltip';
+      _action.title = 'lux3dviewerPluginAuth.logoutTooltip';
       _action.icon = 'mdi-account-check';
     } else {
-      _action.name = 'lux3dviewerAuth.loginButton';
-      _action.title = 'lux3dviewerAuth.loginTooltip';
+      _action.name = 'lux3dviewerPluginAuth.loginButton';
+      _action.title = 'lux3dviewerPluginAuth.loginTooltip';
       _action.icon = 'mdi-account-outline';
     }
   }
@@ -71,7 +71,7 @@ export default function plugin(
     _app?.windowManager.remove(AUTH_WINDOW_ID);
     _app?.notifier.add({
       type: NotificationType.SUCCESS,
-      message: 'lux3dviewerAuth.loginSuccess',
+      message: 'lux3dviewerPluginAuth.loginSuccess',
     });
     await reloadThemes();
   }
@@ -80,9 +80,10 @@ export default function plugin(
     await logout(baseUrl);
     userState.user = null;
     updateAction();
+    _app?.windowManager.remove(AUTH_WINDOW_ID);
     _app?.notifier.add({
       type: NotificationType.SUCCESS,
-      message: 'lux3dviewerAuth.logoutSuccess',
+      message: 'lux3dviewerPluginAuth.logoutSuccess',
     });
     await reloadThemes();
   }
@@ -107,6 +108,7 @@ export default function plugin(
       _app = vcsUiApp;
       try {
         userState.user = await getUserInfo(baseUrl);
+        updateAction();
       } catch (_) {
         // not logged in — normal
       }
@@ -114,16 +116,14 @@ export default function plugin(
 
     onVcsAppMounted(vcsUiApp: VcsUiApp): void {
       _action = reactive<NavbarAction>({
-        name: userState.user?.login ?? 'lux3dviewerAuth.loginButton',
+        name: userState.user?.login ?? 'lux3dviewerPluginAuth.loginButton',
         title: userState.user
-          ? 'lux3dviewerAuth.logoutTooltip'
-          : 'lux3dviewerAuth.loginTooltip',
+          ? 'lux3dviewerPluginAuth.logoutTooltip'
+          : 'lux3dviewerPluginAuth.loginTooltip',
         icon: userState.user ? 'mdi-account-check' : 'mdi-account-outline',
         active: false,
         callback() {
-          if (userState.user) {
-            doLogout();
-          } else if (vcsUiApp.windowManager.has(AUTH_WINDOW_ID)) {
+          if (vcsUiApp.windowManager.has(AUTH_WINDOW_ID)) {
             vcsUiApp.windowManager.remove(AUTH_WINDOW_ID);
           } else {
             vcsUiApp.windowManager.add(
@@ -132,7 +132,7 @@ export default function plugin(
                 component: AuthWindow,
                 slot: WindowSlot.DYNAMIC_RIGHT,
                 state: {
-                  headerTitle: 'lux3dviewerAuth.windowTitle',
+                  headerTitle: 'lux3dviewerPluginAuth.windowTitle',
                   headerIcon: 'mdi-account-outline',
                   styles: { width: '320px', height: 'auto' },
                 },
@@ -145,7 +145,7 @@ export default function plugin(
       vcsUiApp.navbarManager.add(
         { id: 'lux-auth-button', action: _action },
         name,
-        ButtonLocation.MENU,
+        ButtonLocation.PROJECT,
       );
     },
 
@@ -177,14 +177,16 @@ export default function plugin(
 
     i18n: {
       en: {
-        lux3dviewerAuth: {
+        lux3dviewerPluginAuth: {
           loginButton: 'Login',
           loginTooltip: 'Log in to your account',
           logoutTooltip: 'Log out',
           windowTitle: 'My Account',
           usernameLabel: 'Username',
           passwordLabel: 'Password',
-          submitButton: 'Log in',
+          emailLabel: 'Email',
+          submitButton: 'Connect',
+          disconnectButton: 'Disconnect',
           loginSuccess: 'You are now logged in.',
           loginError: 'Invalid username or password.',
           logoutSuccess: 'You have been logged out.',
@@ -192,14 +194,16 @@ export default function plugin(
         },
       },
       fr: {
-        lux3dviewerAuth: {
+        lux3dviewerPluginAuth: {
           loginButton: 'Connexion',
           loginTooltip: 'Se connecter',
           logoutTooltip: 'Se déconnecter',
           windowTitle: 'Mon compte',
           usernameLabel: "Nom d'utilisateur",
           passwordLabel: 'Mot de passe',
+          emailLabel: 'E-mail',
           submitButton: 'Connexion',
+          disconnectButton: 'Déconnexion',
           loginSuccess: 'Vous êtes maintenant connecté.',
           loginError: "Nom d'utilisateur ou mot de passe incorrect.",
           logoutSuccess: 'Vous avez été déconnecté.',
@@ -207,14 +211,16 @@ export default function plugin(
         },
       },
       de: {
-        lux3dviewerAuth: {
+        lux3dviewerPluginAuth: {
           loginButton: 'Anmelden',
           loginTooltip: 'Beim Konto anmelden',
           logoutTooltip: 'Abmelden',
           windowTitle: 'Mein Konto',
           usernameLabel: 'Benutzername',
           passwordLabel: 'Passwort',
-          submitButton: 'Anmelden',
+          emailLabel: 'E-Mail',
+          submitButton: 'Verbinden',
+          disconnectButton: 'Trennen',
           loginSuccess: 'Sie sind jetzt angemeldet.',
           loginError: 'Ungültiger Benutzername oder Passwort.',
           logoutSuccess: 'Sie wurden abgemeldet.',
@@ -222,14 +228,16 @@ export default function plugin(
         },
       },
       lb: {
-        lux3dviewerAuth: {
+        lux3dviewerPluginAuth: {
           loginButton: 'Umellen',
           loginTooltip: 'Am Kont umellen',
           logoutTooltip: 'Ofmellen',
           windowTitle: 'Mäi Kont',
           usernameLabel: 'Benotzernumm',
           passwordLabel: 'Passwuert',
-          submitButton: 'Umellen',
+          emailLabel: 'E-Mail',
+          submitButton: 'Verbannen',
+          disconnectButton: 'Ofmellen',
           loginSuccess: 'Dir sidd elo umgemellt.',
           loginError: 'Falschen Benotzernumm oder Passwuert.',
           logoutSuccess: 'Dir gouft ofgemellt.',

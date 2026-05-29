@@ -1,5 +1,6 @@
 export type UserInfo = {
   login: string;
+  mail?: string;
   role?: string;
   is_admin?: boolean;
 };
