@@ -117,7 +117,8 @@
       const isConnected = computed(() => !!user.value);
 
       const requiredRule = [
-        (v: string) => !!v || 'lux3dviewerPluginAuth.required',
+        (v: string): string | boolean =>
+          !!v || 'lux3dviewerPluginAuth.required',
       ];
 
       async function handleConnect(): Promise<void> {
