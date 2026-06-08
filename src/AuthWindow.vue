@@ -19,22 +19,35 @@
             />
           </v-col>
         </v-row>
-        <v-row no-gutters class="mb-3 align-center">
+        <v-row v-if="isConnected" no-gutters class="mb-3 align-center">
           <v-col cols="4">
-            <VcsLabel html-for="auth-second">{{
-              isConnected
-                ? $t('lux3dviewerPluginAuth.emailLabel')
-                : $t('lux3dviewerPluginAuth.passwordLabel')
+            <VcsLabel html-for="auth-mail">{{
+              $t('lux3dviewerPluginAuth.emailLabel')
             }}</VcsLabel>
           </v-col>
           <v-col cols="8">
             <VcsTextField
-              id="auth-second"
-              :model-value="isConnected ? (user!.mail ?? '') : password"
-              :type="isConnected ? 'text' : 'password'"
-              :disabled="isConnected || loading"
-              :autocomplete="isConnected ? 'email' : 'current-password'"
-              :rules="isConnected ? [] : requiredRule"
+              id="auth-mail"
+              :model-value="user!.mail ?? ''"
+              :type="'text'"
+              :disabled="true"
+            />
+          </v-col>
+        </v-row>
+        <v-row v-else no-gutters class="mb-3 align-center">
+          <v-col cols="4">
+            <VcsLabel html-for="auth-pwd">{{
+              $t('lux3dviewerPluginAuth.passwordLabel')
+            }}</VcsLabel>
+          </v-col>
+          <v-col cols="8">
+            <VcsTextField
+              id="auth-pwd"
+              :model-value="password"
+              :type="'password'"
+              :disabled="loading"
+              :autocomplete="'current-password'"
+              :rules="requiredRule"
               @update:model-value="(v: string) => (password = v)"
             />
           </v-col>
