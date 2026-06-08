@@ -77,8 +77,8 @@
   </v-sheet>
 </template>
 
-<script lang="ts">
-  import { inject, ref, computed, type Ref, type ComputedRef } from 'vue';
+<script setup lang="ts">
+  import { inject, ref, computed } from 'vue';
   import {
     VcsTextField,
     VcsFormButton,
@@ -96,86 +96,48 @@
     readonly userState: { user: UserInfo | null };
   };
 
-  export default {
-    name: 'AuthWindow',
-    components: {
-      VcsTextField,
-      VcsFormButton,
-      VcsLabel,
-      VSheet,
-      VContainer,
-      VRow,
-      VCol,
-      VForm,
-    },
-    setup(): {
-      user: ComputedRef<UserInfo | null>;
-      isConnected: ComputedRef<boolean>;
-      username: Ref<string>;
-      password: Ref<string>;
-      loading: Ref<boolean>;
-      formRef: Ref;
-      requiredRule: ((v: string) => string | boolean)[];
-      handleConnect: () => Promise<void>;
-      handleDisconnect: () => Promise<void>;
-    } {
-      const app = inject<VcsUiApp>('vcsApp')!;
-      const plugin = app.plugins.getByKey(name) as unknown as AuthPluginRef;
-      const username = ref('');
-      const password = ref('');
-      const loading = ref(false);
-      const formRef = ref();
+  const app = inject<VcsUiApp>('vcsApp')!;
+  const plugin = app.plugins.getByKey(name) as unknown as AuthPluginRef;
+  const username = ref('');
+  const password = ref('');
+  const loading = ref(false);
+  const formRef = ref();
 
-      const user = computed(() => plugin.userState.user);
-      const isConnected = computed(() => !!user.value);
+  const user = computed(() => plugin.userState.user);
+  const isConnected = computed(() => !!user.value);
 
-      const requiredRule = [
-        (v: string): string | boolean =>
-          !!v || 'lux3dviewerPluginAuth.required',
-      ];
+  const requiredRule = [
+    (v: string): string | boolean => !!v || 'lux3dviewerPluginAuth.required',
+  ];
 
-      async function handleConnect(): Promise<void> {
-        const { valid } = await formRef.value.validate();
-        if (!valid) return;
-        loading.value = true;
-        try {
-          await plugin.doLogin(username.value, password.value);
-        } catch (_) {
-          app.notifier.add({
-            type: NotificationType.ERROR,
-            message: 'lux3dviewerPluginAuth.loginError',
-          });
-        } finally {
-          loading.value = false;
-          password.value = '';
-        }
-      }
+  async function handleConnect(): Promise<void> {
+    const { valid } = await formRef.value.validate();
+    if (!valid) return;
+    loading.value = true;
+    try {
+      await plugin.doLogin(username.value, password.value);
+    } catch (_) {
+      app.notifier.add({
+        type: NotificationType.ERROR,
+        message: 'lux3dviewerPluginAuth.loginError',
+      });
+    } finally {
+      loading.value = false;
+      password.value = '';
+    }
+  }
 
-      async function handleDisconnect(): Promise<void> {
-        loading.value = true;
-        try {
-          await plugin.doLogout();
-        } catch (_) {
-          app.notifier.add({
-            type: NotificationType.ERROR,
-            message: 'lux3dviewerPluginAuth.logoutError',
-          });
-        } finally {
-          loading.value = false;
-        }
-      }
-
-      return {
-        user,
-        isConnected,
-        username,
-        password,
-        loading,
-        formRef,
-        requiredRule,
-        handleConnect,
-        handleDisconnect,
-      };
-    },
-  };
+  async function handleDisconnect(): Promise<void> {
+    loading.value = true;
+    try {
+      await plugin.doLogout();
+    } catch (_) {
+      app.notifier.add({
+        type: NotificationType.ERROR,
+        message: 'lux3dviewerPluginAuth.logoutError',
+      });
+    } finally {
+      loading.value = false;
+    }
+  }
 </script>
