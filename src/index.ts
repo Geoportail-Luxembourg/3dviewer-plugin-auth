@@ -149,6 +149,7 @@ export default function lux3dviewerPluginAuth(
         { id: 'lux-auth-button', action },
         name,
         ButtonLocation.PROJECT,
+        { desktop: true, tablet: true, mobile: true },
       );
     },
 
