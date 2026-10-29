@@ -6,7 +6,7 @@ export type UserInfo = {
   mymaps_role?: string; //eslint-disable-line
   is_admin?: boolean; //eslint-disable-line
   sn: string;
-  typeUtisilisateur?: string;
+  typeUtilisateur?: string;
 };
 
 export async function getUserInfo(
